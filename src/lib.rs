@@ -5,7 +5,7 @@ use rink_core::{ast, parsing, CURRENCY_FILE};
 use std::path::PathBuf;
 
 #[derive(serde::Deserialize, Default)]
-pub struct RinkConfig {
+pub struct Config {
     currency: Option<PathBuf>,
 }
 
@@ -23,7 +23,7 @@ impl std::error::Error for RinkError {}
 fn init(config_dir: RString) -> rink_core::Context {
     try_init(config_dir)
         .map_err(|e| {
-            eprintln!("{}", e);
+            eprintln!("{:?}", e);
             e
         })
         .expect("Rink failed to initialize")
@@ -57,15 +57,15 @@ fn try_init(config_dir: RString) -> Result<rink_core::Context, Report<RinkError>
         .change_context_lazy(|| RinkError)
         .attach_printable("Rink config file couln't be read. Using default config.")
         .map_err(|e| {
-            eprintln!("{}", e);
+            eprintln!("{:?}", e);
             e
         })
         .and_then(|data| {
-            ron::de::from_bytes::<RinkConfig>(&data)
+            ron::de::from_bytes::<Config>(&data)
                 .change_context_lazy(|| RinkError)
                 .attach_printable("Rink config file malformed. Using default config.")
                 .map_err(|e| {
-                    eprintln!("{}", e);
+                    eprintln!("{:?}", e);
                     e
                 })
         })
@@ -75,7 +75,7 @@ fn try_init(config_dir: RString) -> Result<rink_core::Context, Report<RinkError>
             .change_context_lazy(|| RinkError)
             .attach_printable("Currency file couldn't be read.")
             .map_err(|e| {
-                eprintln!("{}", e);
+                eprintln!("{:?}", e);
                 e
             })
             .map(|data| gnu_units::parse_str(&data));
